@@ -1,0 +1,33 @@
+
+WITH ProductAggregation AS (SELECT
+    o.customer_id,
+    o.product_id,
+    count(o.product_id) AS total_orders,
+    p.product_name
+FROM
+    orders AS o inner join products AS p ON o.product_id = p.product_id
+GROUP BY
+    o.customer_id, 
+    o.product_id
+ORDER BY
+    o.customer_id),
+
+MaxOrders AS (select
+    customer_id, 
+    max(total_orders) AS max_orders 
+FROM 
+    ProductAggregation 
+GROUP BY 
+    customer_id)
+
+SELECT
+    ProductAggregation.customer_id,
+    ProductAggregation.product_id,
+    ProductAggregation.product_name
+FROM
+    ProductAggregation, 
+    MaxOrders
+WHERE
+    ProductAggregation.customer_id = MaxOrders.customer_id 
+    AND
+    ProductAggregation.total_orders = MaxOrders.max_orders
